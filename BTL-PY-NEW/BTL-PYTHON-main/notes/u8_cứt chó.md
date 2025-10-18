@@ -1,0 +1,1 @@
+<p>có thành phần là CH3COOH</p>
