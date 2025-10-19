@@ -1311,6 +1311,7 @@ def chat_general():
         "answer": ai_text,
         "type": "general"
     })
+
 @app.route('/set_reminder', methods=['POST'])
 @login_required
 def set_reminder():
