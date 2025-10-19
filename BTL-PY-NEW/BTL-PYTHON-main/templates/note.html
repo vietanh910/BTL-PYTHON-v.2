@@ -206,6 +206,37 @@
       }
       .chat-input button { padding: 8px 12px; border-radius: var(--radius-sm); }
 
+      /* Text selection floating buttons */
+      .text-selection-buttons {
+        position: fixed;
+        display: none;
+        background: var(--bg-elevated);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        padding: 6px;
+        z-index: 1200;
+        white-space: nowrap;
+      }
+
+      .text-selection-buttons button {
+        display: inline-block;
+        padding: 6px 12px;
+        margin: 0 4px;
+        border: none;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+
+      .text-selection-buttons button:hover {
+        background: var(--accent-primary);
+        color: white;
+      }
+
       @media (max-width: 480px) {
         .chat-panel { right: 12px; left: 12px; width: auto; bottom: 84px; }
         .chat-toggle-btn { right: 12px; bottom: 12px; }
@@ -275,6 +306,13 @@
         <input type="text" id="user-input" placeholder="{{ t('type_your_message') }}" />
         <button class="btn" id="send-btn" onclick="sendMessage()">{{ t('send') }}</button>
       </div>
+    </div>
+
+    <!-- Add the floating buttons container -->
+    <div id="text-selection-buttons" class="text-selection-buttons">
+        <button onclick="handleTextAction('explain')">Giải thích</button>
+        <button onclick="handleTextAction('translate')">Dịch</button>
+        <button onclick="handleTextAction('summarize')">Tóm tắt</button>
     </div>
 
     <script>
@@ -348,6 +386,104 @@
           sendMessage();
         }
       });
+
+      let selectedText = '';
+
+      // Handle text selection
+      document.addEventListener('mouseup', function(e) {
+          const selection = window.getSelection();
+          selectedText = selection.toString().trim();
+          const buttons = document.getElementById('text-selection-buttons');
+
+          if (selectedText) {
+              const range = selection.getRangeAt(0);
+              const rect = range.getBoundingClientRect();
+
+              // Position buttons below the selection
+              const top = window.scrollY + rect.bottom + 10;
+              const left = window.scrollX + rect.left + (rect.width / 2);
+
+              buttons.style.display = 'block';
+              buttons.style.top = top + 'px';
+              buttons.style.left = Math.max(10, Math.min(left - buttons.offsetWidth / 2, window.innerWidth - buttons.offsetWidth - 10)) + 'px';
+          } else {
+              // Only hide if we're not clicking the buttons themselves
+              if (!e.target.closest('#text-selection-buttons')) {
+                  buttons.style.display = 'none';
+              }
+          }
+      });
+
+      // Hide buttons when clicking outside
+      document.addEventListener('mousedown', function(e) {
+          if (!e.target.closest('#text-selection-buttons')) {
+              document.getElementById('text-selection-buttons').style.display = 'none';
+          }
+      });
+
+      // Handle action button clicks
+      function handleTextAction(action) {
+          if (!selectedText) return;
+
+          const prompts = {
+              'explain': 'Giải thích đoạn sau:\n',
+              'translate': 'Dịch đoạn sau sang tiếng Việt:\n',
+              'summarize': 'Tóm tắt đoạn sau:\n'
+          };
+
+          // Show chat panel if not visible
+          const panel = document.querySelector('.chat-panel');
+          if (!panel.classList.contains('show')) {
+              toggleChatPanel();
+          }
+
+          // Send message to chat
+          const message = prompts[action] + selectedText;
+          const input = document.getElementById('user-input');
+          input.value = message;
+          sendMessage();
+
+          // Hide the buttons
+          document.getElementById('text-selection-buttons').style.display = 'none';
+      }
+
+      // Update sendMessage function to include selected text context
+      function sendMessage() {
+        const input = document.getElementById('user-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        appendMessage('user', message);
+        input.value = '';
+
+        // Show typing indicator
+        const typingId = appendMessage('bot', '...');
+
+        fetch(`/chat/{{ note_id }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                context: selectedText // Include selected text as context
+            })
+        })
+        .then(async (response) => {
+            try {
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Error');
+                const reply = data.answer || {{ t('error_no_response')|tojson }};
+                replaceMessageText(typingId, reply);
+            } catch (e) {
+                throw new Error('Response error: ' + e.message);
+            }
+        })
+        .catch(err => {
+            console.error('Chat error:', err);
+            replaceMessageText(typingId, '⚠️ ' + (err.message || {{ t('error_sending_message')|tojson }}));
+        });
+      }
     </script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
