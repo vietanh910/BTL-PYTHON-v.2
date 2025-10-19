@@ -138,6 +138,25 @@
         max-width: 100%;
         height: auto;
       }
+
+      /* Make the editor area shorter (giấy ghi chú ngắn lại) */
+      .ql-editor {
+        min-height: 35vh; /* giảm còn 35% chiều cao màn hình */
+        max-height: calc(100vh - 350px); /* chừa nhiều chỗ hơn cho nút bên dưới */
+        overflow-y: auto;
+        padding: 1rem 1.25rem;
+        box-sizing: border-box;
+      }
+
+      /* Larger screens: vẫn ngắn hơn trước */
+      @media (min-width: 900px) {
+        .ql-editor { min-height: 40vh; max-height: calc(100vh - 300px); }
+      }
+
+      /* Small screens: giữ hợp lý, vẫn ngắn hơn */
+      @media (max-width: 599px) {
+        .ql-editor { min-height: 30vh; max-height: calc(100vh - 220px); }
+      }
     </style>
   </head>
   <body>
