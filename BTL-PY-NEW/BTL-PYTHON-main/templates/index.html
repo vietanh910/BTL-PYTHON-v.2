@@ -109,12 +109,16 @@
                 <li class="folder-item {% if folder[3] %}pinned{% endif %}" onclick="window.location.href='{{ url_for('index', folder_id=folder[0]) }}'">
                     <div class="folder-link {% if selected_folder and selected_folder|int == folder[0] %}active{% endif %}"
                        title="{{ t('note_click_open') }}">
-                       📁 <span class="folder-name" title="{{ folder[1] }}">{{ folder[1] }}</span>
+                       <span class="folder-icon" aria-hidden="true">
+                           📁
+                           <span class="folder-pin-indicator" aria-hidden="true">📌</span>
+                       </span>
+                       <span class="folder-name" title="{{ folder[1] }}">{{ folder[1] }}</span>
                     </div>
                     <div class="folder-actions" onclick="event.stopPropagation();">
                         <button type="button"
                                 class="pin-btn {% if folder[3] %}active{% endif %}"
-                                onclick="toggleFolderPin({{ folder[0] }}, this)"
+                                onclick="event.stopPropagation(); toggleFolderPin({{ folder[0] }}, this)"
                                 title="{{ 'Bỏ ghim thư mục' if folder[3] else 'Ghim thư mục' }}">
                             📌
                         </button>

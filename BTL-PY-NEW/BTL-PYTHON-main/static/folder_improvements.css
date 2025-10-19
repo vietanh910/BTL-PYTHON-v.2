@@ -34,6 +34,7 @@
     min-width: 0;
     max-width: calc(100% - 50px); /* Reserve space for delete button */
     overflow: hidden; /* Critical: prevent text overflow */
+    overflow: visible !important; /* override earlier hidden to let pin show */
 }
 
 .folder-link:hover {
@@ -48,6 +49,66 @@
     font-weight: var(--font-weight-semibold);
     border: 1px solid var(--border-strong);
     box-shadow: var(--shadow-sm);
+}
+
+.folder-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 1.25rem; /* larger folder emoji/icon */
+    line-height: 1;
+}
+
+/* Small overlay pin indicator (non-interactive) shown when folder is pinned */
+.folder-pin-indicator {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 0.85rem;
+    line-height: 1;
+    pointer-events: none; /* indicator is not clickable */
+    background: transparent;
+    display: none; /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+/* Show indicator when the folder-item has pinned class */
+.folder-item.pinned .folder-pin-indicator {
+    display: inline-flex;
+}
+
+/* Small circular pin button that sits on the folder icon */
+.folder-pin-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    transform: translate(0, 0);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: 999px;
+    padding: 2px 6px;
+    font-size: 0.85rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    opacity: 0.95;
+}
+
+.folder-pin-btn:hover {
+    opacity: 1;
+}
+
+.folder-pin-btn.active {
+    background: linear-gradient(90deg, rgba(255,248,225,1), rgba(255,242,204,1));
+    border-color: #ffcc80;
+    color: #ff9800;
 }
 
 .folder-edit-header {
@@ -141,7 +202,7 @@
 .folder-search-input:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary-alpha);
+    box-shadow: 0 0 0 2px var(--accent-primary-alpha, rgba(102,126,234,0.12));
 }
 
 .folder-search-icon {
@@ -307,7 +368,7 @@
 .sort-group select:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary-alpha);
+    box-shadow: 0 0 0 2px var(--accent-primary-alpha, rgba(102,126,234,0.12));
 }
 
 /* Folder actions positioning */
@@ -387,7 +448,7 @@
 .note-sort-group select:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary-alpha);
+    box-shadow: 0 0 0 2px var(--accent-primary-alpha, rgba(102,126,234,0.12));
 }
 
 /* Dark mode support for note sorting */
