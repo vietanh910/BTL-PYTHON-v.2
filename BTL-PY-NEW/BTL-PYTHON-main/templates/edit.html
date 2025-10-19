@@ -157,6 +157,26 @@
       @media (max-width: 599px) {
         .ql-editor { min-height: 30vh; max-height: calc(100vh - 220px); }
       }
+
+      /* Quill size picker: show numeric sizes instead of 'Normal' */
+      .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before {
+        content: '12pt';
+      }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8px"]::before { content: '8'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="10px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="10px"]::before { content: '10'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before { content: '12'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="14px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="14px"]::before { content: '14'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="18px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="18px"]::before { content: '18'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before { content: '24'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36px"]::before,
+      .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36px"]::before { content: '36'; font-size: 14px; }
+      .ql-snow .ql-picker.ql-size .ql-picker-options { max-height: 300px; overflow-y: auto; }
     </style>
   </head>
   <body>
@@ -222,6 +242,10 @@
         if (ImageResizeMod) {
           Quill.register('modules/imageResize', ImageResizeMod);
         }
+        // Register size attributor to allow px values in toolbar
+        const Size = Quill.import('attributors/style/size');
+        Size.whitelist = ['8px','10px','12px','14px','18px','24px','36px'];
+        Quill.register(Size, true);
       }
 
       // Initialize Quill with enhanced toolbar + image resizing
@@ -231,6 +255,7 @@
         modules: {
           toolbar: [
             [{ header: [1, 2, 3, false] }],
+            [{ size: ['8px','10px','12px','14px','18px','24px','36px'] }],
             ["bold", "italic", "underline", "strike"],
             [{ color: [] }, { background: [] }],
             [{ list: "ordered" }, { list: "bullet" }],
@@ -340,6 +365,67 @@
 
       // Focus editor on load
       window.addEventListener('load', function(){ quill.focus(); });
+
+      // After Quill init: keep size picker in sync with caret/selection
+      function syncSizePicker() {
+        const pickerLabel = document.querySelector('.ql-toolbar .ql-size .ql-picker-label');
+        const items = document.querySelectorAll('.ql-toolbar .ql-size .ql-picker-item');
+        if (!pickerLabel) return;
+        const range = quill.getSelection();
+        if (!range) return;
+
+        const whitelist = ['8px','10px','12px','14px','18px','24px','36px'];
+        const format = quill.getFormat(range);
+        let size = format.size; // e.g., '12px' or undefined
+
+        if (!size) {
+          // No explicit format; detect computed size of current leaf DOM node
+          try {
+            const leaf = quill.getLeaf(range.index);
+            const node = leaf && leaf[0] && leaf[0].domNode;
+            if (node) {
+              const computed = window.getComputedStyle(node).fontSize; // e.g., '16px'
+              if (computed) {
+                if (whitelist.includes(computed)) {
+                  size = computed;
+                } else {
+                  // Pick nearest size from whitelist
+                  const comp = parseFloat(computed);
+                  let nearest = whitelist[0];
+                  let best = Math.abs(parseFloat(nearest) - comp);
+                  for (const s of whitelist) {
+                    const diff = Math.abs(parseFloat(s) - comp);
+                    if (diff < best) { best = diff; nearest = s; }
+                  }
+                  size = nearest;
+                }
+              }
+            }
+          } catch (e) { /* ignore */ }
+        }
+
+        if (!size) {
+          pickerLabel.removeAttribute('data-value');
+          items.forEach(it => it.classList.remove('ql-selected'));
+          return;
+        }
+
+        pickerLabel.setAttribute('data-value', size);
+        items.forEach(it => {
+          if (it.getAttribute('data-value') === size) it.classList.add('ql-selected');
+          else it.classList.remove('ql-selected');
+        });
+      }
+
+      quill.on('selection-change', function() {
+        // Defer until Quill updates formats
+        setTimeout(syncSizePicker, 0);
+      });
+      quill.on('text-change', function() {
+        setTimeout(syncSizePicker, 0);
+      });
+      // Initial sync
+      setTimeout(syncSizePicker, 0);
     </script>
   </body>
 </html>
