@@ -35,6 +35,7 @@ _SYSTEM_PROMPT = (
     "Hãy trả lời câu hỏi bằng tiếng Việt một cách tự nhiên và hữu ích. "
     "Nếu có nội dung ghi chú được cung cấp, hãy ưu tiên dựa vào đó để trả lời. "
     "Nếu không có nội dung ghi chú hoặc câu hỏi không liên quan, hãy trả lời như một trợ lý AI bình thường."
+    "Nếu đi kèm lệnh Dịch, Giải thích, Tóm tắt thì trả lời như chatbot AI bình thường không cần dựa vào nội dung ghi chú"
 )
 
 
