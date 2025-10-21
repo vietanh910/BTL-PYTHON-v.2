@@ -208,7 +208,7 @@
                         </form>
                         <button type="button"
                                 class="pin-btn {% if note[3] %}active{% endif %}"
-                                onclick="toggleNotePin({{ note[0] }}, this)"
+                                onclick="event.stopPropagation(); toggleNotePin({{ note[0] }}, this)"
                                 title="{{ 'Bỏ ghim ghi chú' if note[3] else 'Ghim ghi chú' }}">
                             📌
                         </button>
@@ -411,7 +411,7 @@
                     button.title = isPinned ? 'Ghim ghi chú' : 'Bỏ ghim ghi chú';
 
                     // Move pinned notes to top
-                    const notesList = document.querySelector('.notes-list');
+                    const notesList = document.querySelector('.note-list'); // <-- fixed selector
                     const notes = Array.from(notesList.children);
                     notes.sort((a, b) => {
                         const aPinned = a.classList.contains('pinned');
