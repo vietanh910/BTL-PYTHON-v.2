@@ -82,7 +82,7 @@ TRANSLATIONS = {
         'new_folder': 'Thư mục mới',
         'all_notes': 'Tất cả ghi chú',
         'create_note': 'Tạo ghi chú mới',
-        'create_note_placeholder': '✨ Tạo ghi chú mới...',
+        'create_note_placeholder': ' Tạo ghi chú mới...',
         'no_notes': 'Chưa có ghi chú',
         'no_notes_subtitle': 'Tạo ghi chú đầu tiên để bắt đầu!',
         'note_click_open': 'Click để mở',
