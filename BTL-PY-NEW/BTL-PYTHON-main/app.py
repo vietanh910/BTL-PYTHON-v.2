@@ -1272,11 +1272,9 @@ def chat_note(note_id):
     except FileNotFoundError:
         html_content = ""
 
-    # Prepare context and ask Gemini
     paragraphs = extract_plain_paragraphs(html_content)
     context = "\n".join(paragraphs) if paragraphs else ""
 
-    # Always try Gemini first
     ai_text = ask_gemini(message, context)
 
     # Only fallback if Gemini explicitly says not configured

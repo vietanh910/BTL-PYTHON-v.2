@@ -236,7 +236,7 @@
         background: var(--accent-primary);
         color: white;
       }
-
+{#nếu thiếu bị từ 480px trở xuống#}
       @media (max-width: 480px) {
         .chat-panel { right: 12px; left: 12px; width: auto; bottom: 84px; }
         .chat-toggle-btn { right: 12px; bottom: 12px; }
@@ -251,6 +251,9 @@
     </style>
 </head>
 <body>
+{#cú pháp của Jinja2, một template engine dùng trong Flask (Python).#}
+{#{{ variable }}: In giá trị của một biến từ máy chủ Python ra HTML.#}
+{#{% logic %}: Thực hiện một logic như vòng lặp for hoặc câu lệnh if#}
     <header class="topbar">
         <a href="{{ url_for('index') }}" class="brand" title="{{ t('tooltip_home') }}">
             📝 {{ t('app_name') }}
