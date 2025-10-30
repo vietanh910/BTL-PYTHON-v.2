@@ -1053,7 +1053,7 @@ def generate_share_code(note_id):
         if existing:
             # Update existing share
             c.execute("""
-                UPDATE shared_notes 
+                UPDATE shared_notes
                 SET title = ?, content = ?, created_at = ?
                 WHERE note_id = ? AND original_user_id = ?
             """, (title, content, datetime.utcnow().isoformat(), note_id, user_id))
@@ -1358,9 +1358,9 @@ def set_reminder():
             args=[app.app_context(), email, note_title, note_content],
             replace_existing=True
         )
-        
+
         return jsonify({
-            'status': 'success', 
+            'status': 'success',
             'message': f'Đã đặt lời nhắc thành công vào lúc {reminder_time.strftime("%H:%M ngày %d/%m/%Y")}'
         })
 
@@ -1407,6 +1407,54 @@ def unpin_note(note_id):
         c.execute("UPDATE notes SET pinned = 0 WHERE id = ? AND user_id = ?", (note_id, user_id))
         conn.commit()
     return jsonify({"success": True})
+
+
+@app.route("/audit_log", methods=["GET"])
+@login_required
+def audit_log():
+    """Route để xem lịch sử thay đổi từ bảng audit_log"""
+    user_id = session.get("user_id")
+    limit = request.args.get('limit', 100, type=int)
+    table_filter = request.args.get('table', None)
+
+    with get_conn() as conn:
+        c = conn.cursor()
+
+        # Query audit log với filter tùy chọn
+        if table_filter:
+            c.execute("""
+                SELECT al.*, u.username 
+                FROM audit_log al
+                LEFT JOIN users u ON al.user_id = u.id
+                WHERE al.table_name = ?
+                ORDER BY al.changed_at DESC
+                LIMIT ?
+            """, (table_filter, limit))
+        else:
+            c.execute("""
+                SELECT al.*, u.username 
+                FROM audit_log al
+                LEFT JOIN users u ON al.user_id = u.id
+                ORDER BY al.changed_at DESC
+                LIMIT ?
+            """, (limit,))
+
+        logs = []
+        for row in c.fetchall():
+            logs.append({
+                'id': row[0],
+                'table_name': row[1],
+                'record_id': row[2],
+                'action': row[3],
+                'old_data': row[4],
+                'new_data': row[5],
+                'user_id': row[6],
+                'changed_at': row[7],
+                'username': row[8] if len(row) > 8 else 'Unknown'
+            })
+
+    return jsonify({'logs': logs, 'total': len(logs)})
+
 
 # Ensure the Flask dev server starts when running `python app.py` directly
 if __name__ == "__main__":
