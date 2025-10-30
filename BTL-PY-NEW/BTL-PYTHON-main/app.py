@@ -1409,6 +1409,7 @@ def unpin_note(note_id):
     return jsonify({"success": True})
 
 
+
 @app.route("/audit_log", methods=["GET"])
 @login_required
 def audit_log():
